@@ -1,0 +1,218 @@
+// Ensure Player user_id is unique
+CREATE CONSTRAINT FOR (p:Player) REQUIRE p.user_id IS UNIQUE;
+// Ensure Arena arena_id is unique
+CREATE CONSTRAINT FOR (a:Arena) REQUIRE a.arena_id IS UNIQUE;
+// Ensure Court court_id is unique
+CREATE CONSTRAINT FOR (c:Court) REQUIRE c.court_id IS UNIQUE;
+// Ensure TimeSlot slot_id is unique
+CREATE CONSTRAINT FOR (t:TimeSlot) REQUIRE t.slot_id IS UNIQUE;
+
+UNWIND [
+  {id: 'u1', email: 'karthik_blr@example.com', skill: 3, sport: 'Badminton', loc: 'HSR Layout'},
+  {id: 'u2', email: 'priya_smash@example.com', skill: 4, sport: 'Badminton', loc: 'Indiranagar'},
+  {id: 'u3', email: 'rahul_shuttler@example.com', skill: 2, sport: 'Badminton', loc: 'Bellandur'},
+  {id: 'u4', email: 'sneha_reddy@example.com', skill: 5, sport: 'Badminton', loc: 'Whitefield'},
+  {id: 'u5', email: 'amit_kumar@example.com', skill: 1, sport: 'Tennis', loc: 'Koramangala'},
+  {id: 'u6', email: 'divya_gowda@example.com', skill: 3, sport: 'Badminton', loc: 'JP Nagar'},
+  {id: 'u7', email: 'rohit_sharma@example.com', skill: 4, sport: 'Badminton', loc: 'Malleswaram'},
+  {id: 'u8', email: 'pooja_hegde@example.com', skill: 2, sport: 'Badminton', loc: 'Jayanagar'},
+  {id: 'u9', email: 'vikram_rao@example.com', skill: 5, sport: 'Squash', loc: 'Marathahalli'},
+  {id: 'u10', email: 'anjali_m@example.com', skill: 3, sport: 'Badminton', loc: 'Electronic City'},
+  {id: 'u11', email: 'sandeep_n@example.com', skill: 4, sport: 'Badminton', loc: 'Sarjapur Road'},
+  {id: 'u12', email: 'kavya_s@example.com', skill: 2, sport: 'Tennis', loc: 'Banashankari'},
+  {id: 'u13', email: 'naveen_p@example.com', skill: 3, sport: 'Badminton', loc: 'BTM Layout'},
+  {id: 'u14', email: 'megha_d@example.com', skill: 1, sport: 'Badminton', loc: 'Kalyan Nagar'},
+  {id: 'u15', email: 'arjun_v@example.com', skill: 4, sport: 'Badminton', loc: 'Hebbal'}
+] AS row
+
+CREATE (p:Player {
+  user_id: row.id,
+  name: split(row.email, '@')[0], 
+  skill_tier: row.skill,
+  elo_score: toInteger(rand() * 800) + 1200, 
+  location_zone: row.loc,
+  available_days: ['Saturday', 'Sunday'], 
+  sport: row.sport
+});
+
+
+UNWIND [
+  {id: 'a1', name: 'Play Arena', address: 'Sarjapur Road, Kasavanah...', lat: 12.9056, lng: 77.6775, sports: ['Badminton', 'Tennis']},
+  {id: 'a2', name: 'Agon Sports', address: 'Hennur-Bagalur Main Road', lat: 13.0456, lng: 77.6321, sports: ['Badminton', 'Swimming']},
+  {id: 'a3', name: 'Spuddy Badminton', address: 'HSR Layout Sector 2', lat: 12.9081, lng: 77.6476, sports: ['Badminton']},
+  {id: 'a4', name: 'Koramangala Club Arena', address: '6th Block, Koramangala', lat: 12.9352, lng: 77.6245, sports: ['Badminton', 'Squash']},
+  {id: 'a5', name: 'Gurukul Sports', address: 'Whitefield Main Rd', lat: 12.9698, lng: 77.7499, sports: ['Badminton']},
+  {id: 'a6', name: 'Smash & Sprint', address: 'Indiranagar 1st Stage', lat: 12.9783, lng: 77.6408, sports: ['Badminton', 'Table Tennis']},
+  {id: 'a7', name: 'ClearDrop Sports', address: 'JP Nagar 7th Phase', lat: 12.8914, lng: 77.5846, sports: ['Badminton']},
+  {id: 'a8', name: 'Namma Shuttle', address: 'BTM Layout 2nd Stage', lat: 12.9165, lng: 77.6101, sports: ['Badminton']},
+  {id: 'a9', name: 'Star Badminton Academy', address: 'Malleshwaram 15th Cross', lat: 13.0031, lng: 77.5714, sports: ['Badminton']},
+  {id: 'a10', name: 'Active Arena', address: 'Marathahalli Outer Ring Road', lat: 12.9383, lng: 77.6973, sports: ['Badminton', 'Football']},
+  {id: 'a11', name: 'Feather Touch', address: 'Jayanagar 4th Block', lat: 12.9279, lng: 77.5856, sports: ['Badminton']},
+  {id: 'a12', name: 'Smashers Hub', address: 'Bellandur', lat: 12.9304, lng: 77.6784, sports: ['Badminton']},
+  {id: 'a13', name: 'Rally Point', address: 'Electronic City Phase 1', lat: 12.8452, lng: 77.6601, sports: ['Badminton', 'Gym']},
+  {id: 'a14', name: 'Shuttle Craze', address: 'Kalyan Nagar', lat: 13.0238, lng: 77.6444, sports: ['Badminton']},
+  {id: 'a15', name: 'ProShot Arena', address: 'Banashankari 3rd Stage', lat: 12.9254, lng: 77.5467, sports: ['Badminton']}
+] AS row
+
+CREATE (a:Arena {
+  arena_id: row.id,
+  name: row.name,
+  address: row.address,
+  latitude: row.lat,
+  longitude: row.lng,
+  sport_types: row.sports
+});
+
+UNWIND [
+  {id: 'c1', a_id: 'a1', name: 'Court 1 - Wooden', surface: 'Wooden', active: true},
+  {id: 'c2', a_id: 'a2', name: 'Court A - Synthetic', surface: 'Synthetic', active: true},
+  {id: 'c3', a_id: 'a3', name: 'Main Court', surface: 'Synthetic', active: true},
+  {id: 'c4', a_id: 'a4', name: 'Premium Court 1', surface: 'Wooden', active: true},
+  {id: 'c5', a_id: 'a5', name: 'Court Alpha', surface: 'Synthetic', active: true},
+  {id: 'c6', a_id: 'a6', name: 'Court 1', surface: 'Wooden', active: true},
+  {id: 'c7', a_id: 'a7', name: 'Center Court', surface: 'Synthetic', active: true},
+  {id: 'c8', a_id: 'a8', name: 'Court B1', surface: 'Synthetic', active: true},
+  {id: 'c9', a_id: 'a9', name: 'Coaching Court', surface: 'Wooden', active: true},
+  {id: 'c10', a_id: 'a10', name: 'Court 1', surface: 'Synthetic', active: true},
+  {id: 'c11', a_id: 'a11', name: 'Court 2', surface: 'Wooden', active: true},
+  {id: 'c12', a_id: 'a12', name: 'Smash Court', surface: 'Synthetic', active: true},
+  {id: 'c13', a_id: 'a13', name: 'Court X', surface: 'Synthetic', active: true},
+  {id: 'c14', a_id: 'a14', name: 'Court 1', surface: 'Wooden', active: true},
+  {id: 'c15', a_id: 'a15', name: 'Champion Court', surface: 'Synthetic', active: true}
+] AS row
+
+CREATE (c:Court {
+  court_id: row.id,
+  court_name: row.name,
+  surface_type: row.surface,
+  arena_id: row.a_id,
+  is_active: row.active
+});
+
+UNWIND [
+  {id: 'c1', a_id: 'a1', name: 'Court 1 - Wooden', surface: 'Wooden', active: true},
+  {id: 'c2', a_id: 'a2', name: 'Court A - Synthetic', surface: 'Synthetic', active: true},
+  {id: 'c3', a_id: 'a3', name: 'Main Court', surface: 'Synthetic', active: true},
+  {id: 'c4', a_id: 'a4', name: 'Premium Court 1', surface: 'Wooden', active: true},
+  {id: 'c5', a_id: 'a5', name: 'Court Alpha', surface: 'Synthetic', active: true},
+  {id: 'c6', a_id: 'a6', name: 'Court 1', surface: 'Wooden', active: true},
+  {id: 'c7', a_id: 'a7', name: 'Center Court', surface: 'Synthetic', active: true},
+  {id: 'c8', a_id: 'a8', name: 'Court B1', surface: 'Synthetic', active: true},
+  {id: 'c9', a_id: 'a9', name: 'Coaching Court', surface: 'Wooden', active: true},
+  {id: 'c10', a_id: 'a10', name: 'Court 1', surface: 'Synthetic', active: true},
+  {id: 'c11', a_id: 'a11', name: 'Court 2', surface: 'Wooden', active: true},
+  {id: 'c12', a_id: 'a12', name: 'Smash Court', surface: 'Synthetic', active: true},
+  {id: 'c13', a_id: 'a13', name: 'Court X', surface: 'Synthetic', active: true},
+  {id: 'c14', a_id: 'a14', name: 'Court 1', surface: 'Wooden', active: true},
+  {id: 'c15', a_id: 'a15', name: 'Champion Court', surface: 'Synthetic', active: true}
+] AS row
+
+CREATE (c:Court {
+  court_id: row.id,
+  court_name: row.name,
+  surface_type: row.surface,
+  arena_id: row.a_id,
+  is_active: row.active
+});
+
+UNWIND [
+  {id: 'ts1', c_id: 'c1', start: '2024-05-10T06:00:00+05:30', end: '2024-05-10T07:00:00+05:30', status: 'booked', price: 40000},
+  {id: 'ts2', c_id: 'c2', start: '2024-05-10T07:00:00+05:30', end: '2024-05-10T08:00:00+05:30', status: 'booked', price: 45000},
+  {id: 'ts3', c_id: 'c3', start: '2024-05-10T18:00:00+05:30', end: '2024-05-10T19:00:00+05:30', status: 'booked', price: 50000},
+  {id: 'ts4', c_id: 'c4', start: '2024-05-11T06:00:00+05:30', end: '2024-05-11T07:00:00+05:30', status: 'booked', price: 60000},
+  {id: 'ts5', c_id: 'c5', start: '2024-05-11T19:00:00+05:30', end: '2024-05-11T20:00:00+05:30', status: 'booked', price: 45000},
+  {id: 'ts6', c_id: 'c6', start: '2024-05-12T08:00:00+05:30', end: '2024-05-12T09:00:00+05:30', status: 'booked', price: 40000},
+  {id: 'ts7', c_id: 'c7', start: '2024-05-12T20:00:00+05:30', end: '2024-05-12T21:00:00+05:30', status: 'booked', price: 45000},
+  {id: 'ts8', c_id: 'c8', start: '2024-05-13T06:00:00+05:30', end: '2024-05-13T07:00:00+05:30', status: 'booked', price: 35000},
+  {id: 'ts9', c_id: 'c9', start: '2024-05-13T17:00:00+05:30', end: '2024-05-13T18:00:00+05:30', status: 'booked', price: 40000},
+  {id: 'ts10', c_id: 'c10', start: '2024-05-14T07:00:00+05:30', end: '2024-05-14T08:00:00+05:30', status: 'booked', price: 50000},
+  {id: 'ts11', c_id: 'c11', start: '2024-05-14T18:00:00+05:30', end: '2024-05-14T19:00:00+05:30', status: 'booked', price: 55000},
+  {id: 'ts12', c_id: 'c12', start: '2024-05-15T06:00:00+05:30', end: '2024-05-15T07:00:00+05:30', status: 'booked', price: 45000},
+  {id: 'ts13', c_id: 'c13', start: '2024-05-15T19:00:00+05:30', end: '2024-05-15T20:00:00+05:30', status: 'booked', price: 50000},
+  {id: 'ts14', c_id: 'c14', start: '2024-05-16T08:00:00+05:30', end: '2024-05-16T09:00:00+05:30', status: 'booked', price: 40000},
+  {id: 'ts15', c_id: 'c15', start: '2024-05-16T20:00:00+05:30', end: '2024-05-16T21:00:00+05:30', status: 'booked', price: 60000}
+] AS row
+
+CREATE (t:TimeSlot {
+  timeslot_id: row.id,
+  court_id: row.c_id,
+  starts_at: datetime(row.start),
+  ends_at: datetime(row.end),
+  status: row.status,
+  price_cents: row.price
+});
+
+UNWIND [
+  {p1: 'u1', p2: 'u2', date: '2024-05-01', winner: 'u1', score: '21-18, 21-15', arena: 'a1'},
+  {p1: 'u4', p2: 'u7', date: '2024-05-03', winner: 'u7', score: '15-21, 21-19, 21-17', arena: 'a4'},
+  {p1: 'u14', p2: 'u5', date: '2024-05-05', winner: 'u5', score: '6-2, 6-4', arena: 'a1'}
+] AS row
+
+MATCH (p1:Player {user_id: row.p1})
+MATCH (p2:Player {user_id: row.p2})
+MERGE (p1)-[r:PLAYED_AGAINST {date: date(row.date)}]->(p2)
+SET r.winner_id = row.winner, 
+    r.score = row.score, 
+    r.arena_id = row.arena;
+
+UNWIND [
+  {p1: 'u3', p2: 'u6', status: 'pending', created: '2024-05-09T08:30:00Z', slot: 'ts1'},
+  {p1: 'u11', p2: 'u15', status: 'accepted', created: '2024-05-08T14:15:00Z', slot: 'ts4'},
+  {p1: 'u8', p2: 'u10', status: 'declined', created: '2024-05-07T18:00:00Z', slot: 'ts7'}
+] AS row
+
+MATCH (p1:Player {user_id: row.p1})
+MATCH (p2:Player {user_id: row.p2})
+MERGE (p1)-[r:CHALLENGED {slot_id: row.slot}]->(p2)
+SET r.status = row.status, 
+    r.created_at = datetime(row.created);
+
+UNWIND [
+  {p: 'u1', a: 'a1', visits: 15, last: '2024-05-05'},
+  {p: 'u2', a: 'a6', visits: 8, last: '2024-05-07'},
+  {p: 'u5', a: 'a4', visits: 22, last: '2024-05-09'},
+  {p: 'u9', a: 'a10', visits: 3, last: '2024-05-02'}
+] AS row
+
+MATCH (p:Player {user_id: row.p})
+MATCH (a:Arena {arena_id: row.a})
+MERGE (p)-[r:PLAYS_AT]->(a)
+SET r.visit_count = row.visits, 
+    r.last_visit = date(row.last);
+
+UNWIND [
+  {p: 'u1', slot: 'ts1', freq: 'regular'},
+  {p: 'u2', slot: 'ts2', freq: 'occasional'},
+  {p: 'u5', slot: 'ts5', freq: 'regular'},
+  {p: 'u12', slot: 'ts12', freq: 'occasional'}
+] AS row
+
+MATCH (p:Player {user_id: row.p})
+MATCH (t:TimeSlot {timeslot_id: row.slot})
+MERGE (p)-[r:AVAILABLE_ON]->(t)
+SET r.frequency = row.freq;
+
+UNWIND [
+  {follower: 'u1', followee: 'u2', since: '2023-06-15'},
+  {follower: 'u2', followee: 'u1', since: '2023-06-16'},
+  {follower: 'u3', followee: 'u1', since: '2024-01-10'},
+  {follower: 'u9', followee: 'u5', since: '2024-03-22'}
+] AS row
+
+MATCH (p1:Player {user_id: row.follower})
+MATCH (p2:Player {user_id: row.followee})
+MERGE (p1)-[r:FOLLOWS]->(p2)
+SET r.since = date(row.since);
+
+// Automatically find players with similar ELO scores and link them
+MATCH (p1:Player), (p2:Player)
+// Ensure we don't match a player to themselves, and prevent duplicate reverse edges
+WHERE p1.user_id < p2.user_id 
+  AND p1.sport = p2.sport
+  // Calculate if ELO difference is less than or equal to 100
+  AND abs(p1.elo_score - p2.elo_score) <= 100 
+  
+// Create an undirected relationship since similarity is mutual
+MERGE (p1)-[r:SIMILAR_LEVEL]-(p2) 
+SET r.elo_delta = abs(p1.elo_score - p2.elo_score),
+    r.computed_at = datetime();
