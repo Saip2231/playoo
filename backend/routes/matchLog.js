@@ -29,6 +29,11 @@ router.post("/match-log", requireAuth, async (req, res) => {
 router.get("/player/:id/journal", requireAuth, async (req, res) => {
   try {
     const playerId = req.params.id;
+    
+    console.log("=== AUTH DEBUG ===");
+    console.log("Requested Player ID (URL):", playerId);
+    console.log("Actual Token User ID (Supabase):", req.user.id);
+    console.log("Are they exactly equal?", playerId === req.user.id);
 
     if (playerId !== req.user.id) {
       return res.status(403).json({ error: "Unauthorized" });
