@@ -1,0 +1,188 @@
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    skill_tier INTEGER,
+    sport VARCHAR(50),
+    location VARCHAR(100)
+);
+
+-- 2. Arenas 
+CREATE TABLE arenas (
+    arenas_id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    address VARCHAR(200),
+    lat FLOAT,
+    lng FLOAT,
+    sport_types TEXT[],
+    amenities TEXT[]
+);
+
+-- 3. Courts 
+CREATE TABLE courts (
+    court_id SERIAL PRIMARY KEY,
+    arenas_id INTEGER REFERENCES arenas(arenas_id) ON DELETE CASCADE,
+    court_name VARCHAR(100) NOT NULL,
+    surface_type VARCHAR(50),
+    is_active BOOLEAN DEFAULT true
+);
+
+-- 4. Time Slots 
+CREATE TABLE time_slots (
+    timeslot_id SERIAL PRIMARY KEY,
+    -- FIXED: Changed courts(id) to courts(court_id)
+    court_id INTEGER REFERENCES courts(court_id) ON DELETE CASCADE, 
+    starts_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    ends_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    status VARCHAR(50) DEFAULT 'available',
+    price_cents INTEGER NOT NULL
+);
+
+-- 5. Bookings 
+CREATE TABLE bookings (
+    booking_id SERIAL PRIMARY KEY,
+    -- FIXED: Changed time_slots(id) to time_slots(timeslot_id)
+    slot_id INTEGER REFERENCES time_slots(timeslot_id) ON DELETE RESTRICT, 
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    stripe_payment_id VARCHAR(100),
+    status VARCHAR(50) DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. Matches 
+CREATE TABLE matches (
+    id SERIAL PRIMARY KEY,
+    -- FIXED: Changed bookings(id) to bookings(booking_id)
+    booking_id INTEGER REFERENCES bookings(booking_id) ON DELETE CASCADE, 
+    player_a_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    player_b_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    status VARCHAR(50) DEFAULT 'scheduled',
+    score_json JSONB
+);
+
+-- 7. Notifications 
+CREATE TABLE notifications (
+    notification_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL,
+    payload_json JSONB,
+    read_at TIMESTAMP WITH TIME ZONE
+);
+
+INSERT INTO users (email, skill_tier, sport, location) VALUES
+('karthik_blr@example.com', 3, 'Badminton', 'HSR Layout'),
+('priya_smash@example.com', 4, 'Badminton', 'Indiranagar'),
+('rahul_shuttler@example.com', 2, 'Badminton', 'Bellandur'),
+('sneha_reddy@example.com', 5, 'Badminton', 'Whitefield'),
+('amit_kumar@example.com', 1, 'Tennis', 'Koramangala'),
+('divya_gowda@example.com', 3, 'Badminton', 'JP Nagar'),
+('rohit_sharma@example.com', 4, 'Badminton', 'Malleswaram'),
+('pooja_hegde@example.com', 2, 'Badminton', 'Jayanagar'),
+('vikram_rao@example.com', 5, 'Squash', 'Marathahalli'),
+('anjali_m@example.com', 3, 'Badminton', 'Electronic City'),
+('sandeep_n@example.com', 4, 'Badminton', 'Sarjapur Road'),
+('kavya_s@example.com', 2, 'Tennis', 'Banashankari'),
+('naveen_p@example.com', 3, 'Badminton', 'BTM Layout'),
+('megha_d@example.com', 1, 'Badminton', 'Kalyan Nagar'),
+('arjun_v@example.com', 4, 'Badminton', 'Hebbal');
+
+INSERT INTO arenas (name, address, lat, lng, sport_types, amenities) VALUES
+('Play Arena', 'Sarjapur Road, Kasavanahalli', 12.9056, 77.6775, ARRAY['Badminton', 'Tennis'], ARRAY['Parking', 'Washroom', 'Pro Shop']),
+('Agon Sports', 'Hennur-Bagalur Main Road', 13.0456, 77.6321, ARRAY['Badminton', 'Swimming'], ARRAY['Parking', 'Locker Room']),
+('Spuddy Badminton', 'HSR Layout Sector 2', 12.9081, 77.6476, ARRAY['Badminton'], ARRAY['Parking', 'Drinking Water']),
+('Koramangala Club Arena', '6th Block, Koramangala', 12.9352, 77.6245, ARRAY['Badminton', 'Squash'], ARRAY['Cafe', 'Washroom']),
+('Gurukul Sports', 'Whitefield Main Rd', 12.9698, 77.7499, ARRAY['Badminton'], ARRAY['Parking', 'Restrooms']),
+('Smash & Sprint', 'Indiranagar 1st Stage', 12.9783, 77.6408, ARRAY['Badminton', 'Table Tennis'], ARRAY['Vending Machine']),
+('ClearDrop Sports', 'JP Nagar 7th Phase', 12.8914, 77.5846, ARRAY['Badminton'], ARRAY['Parking']),
+('Namma Shuttle', 'BTM Layout 2nd Stage', 12.9165, 77.6101, ARRAY['Badminton'], ARRAY['Drinking Water', 'Restrooms']),
+('Star Badminton Academy', 'Malleshwaram 15th Cross', 13.0031, 77.5714, ARRAY['Badminton'], ARRAY['Coaching', 'Parking']),
+('Active Arena', 'Marathahalli Outer Ring Road', 12.9383, 77.6973, ARRAY['Badminton', 'Football'], ARRAY['Cafe', 'Pro Shop']),
+('Feather Touch', 'Jayanagar 4th Block', 12.9279, 77.5856, ARRAY['Badminton'], ARRAY['Parking', 'Washroom']),
+('Smashers Hub', 'Bellandur', 12.9304, 77.6784, ARRAY['Badminton'], ARRAY['Drinking Water']),
+('Rally Point', 'Electronic City Phase 1', 12.8452, 77.6601, ARRAY['Badminton', 'Gym'], ARRAY['Parking', 'Showers']),
+('Shuttle Craze', 'Kalyan Nagar', 13.0238, 77.6444, ARRAY['Badminton'], ARRAY['Washroom']),
+('ProShot Arena', 'Banashankari 3rd Stage', 12.9254, 77.5467, ARRAY['Badminton'], ARRAY['Parking', 'Drinking Water']);
+
+INSERT INTO courts (arenas_id, court_name, surface_type, is_active) VALUES
+(1, 'Court 1 - Wooden', 'Wooden', true),
+(2, 'Court A - Synthetic', 'Synthetic', true),
+(3, 'Main Court', 'Synthetic', true),
+(4, 'Premium Court 1', 'Wooden', true),
+(5, 'Court Alpha', 'Synthetic', true),
+(6, 'Court 1', 'Wooden', true),
+(7, 'Center Court', 'Synthetic', true),
+(8, 'Court B1', 'Synthetic', true),
+(9, 'Coaching Court', 'Wooden', true),
+(10, 'Court 1', 'Synthetic', true),
+(11, 'Court 2', 'Wooden', true),
+(12, 'Smash Court', 'Synthetic', true),
+(13, 'Court X', 'Synthetic', true),
+(14, 'Court 1', 'Wooden', true),
+(15, 'Champion Court', 'Synthetic', true);
+
+INSERT INTO time_slots (court_id, starts_at, ends_at, status, price_cents) VALUES
+(1, '2024-05-10 06:00:00+05:30', '2024-05-10 07:00:00+05:30', 'booked', 40000),
+(2, '2024-05-10 07:00:00+05:30', '2024-05-10 08:00:00+05:30', 'booked', 45000),
+(3, '2024-05-10 18:00:00+05:30', '2024-05-10 19:00:00+05:30', 'booked', 50000),
+(4, '2024-05-11 06:00:00+05:30', '2024-05-11 07:00:00+05:30', 'booked', 60000),
+(5, '2024-05-11 19:00:00+05:30', '2024-05-11 20:00:00+05:30', 'booked', 45000),
+(6, '2024-05-12 08:00:00+05:30', '2024-05-12 09:00:00+05:30', 'booked', 40000),
+(7, '2024-05-12 20:00:00+05:30', '2024-05-12 21:00:00+05:30', 'booked', 45000),
+(8, '2024-05-13 06:00:00+05:30', '2024-05-13 07:00:00+05:30', 'booked', 35000),
+(9, '2024-05-13 17:00:00+05:30', '2024-05-13 18:00:00+05:30', 'booked', 40000),
+(10, '2024-05-14 07:00:00+05:30', '2024-05-14 08:00:00+05:30', 'booked', 50000),
+(11, '2024-05-14 18:00:00+05:30', '2024-05-14 19:00:00+05:30', 'booked', 55000),
+(12, '2024-05-15 06:00:00+05:30', '2024-05-15 07:00:00+05:30', 'booked', 45000),
+(13, '2024-05-15 19:00:00+05:30', '2024-05-15 20:00:00+05:30', 'booked', 50000),
+(14, '2024-05-16 08:00:00+05:30', '2024-05-16 09:00:00+05:30', 'booked', 40000),
+(15, '2024-05-16 20:00:00+05:30', '2024-05-16 21:00:00+05:30', 'booked', 60000);
+
+INSERT INTO bookings (slot_id, user_id, stripe_payment_id, status) VALUES
+(1, 1, 'pi_3J9Z123456789', 'confirmed'),
+(2, 2, 'pi_3J9Z987654321', 'confirmed'),
+(3, 3, 'pi_3J9Zabcdefghi', 'confirmed'),
+(4, 4, 'pi_3J9Zqwertyuiop', 'confirmed'),
+(5, 5, 'pi_3J9Zzxcvbnm12', 'confirmed'),
+(6, 6, 'pi_3J9ZlkjhgfdsA', 'confirmed'),
+(7, 7, 'pi_3J9Zmnbvcxz98', 'confirmed'),
+(8, 8, 'pi_3J9Zpoiuytrew', 'confirmed'),
+(9, 9, 'pi_3J9Zasdfghjkl', 'confirmed'),
+(10, 10, 'pi_3J9Z1q2w3e4r5', 'confirmed'),
+(11, 11, 'pi_3J9Z0p9o8i7u6', 'confirmed'),
+(12, 12, 'pi_3J9Zz1x2c3v4b', 'confirmed'),
+(13, 13, 'pi_3J9Zm1n2b3v4c', 'confirmed'),
+(14, 14, 'pi_3J9Za1s2d3f4g', 'confirmed'),
+(15, 15, 'pi_3J9Zq1w2e3r4t', 'confirmed');
+
+INSERT INTO matches (booking_id, player_a_id, player_b_id, status, score_json) VALUES
+(1, 1, 2, 'completed', '{"sets": [{"a": 21, "b": 15}, {"a": 21, "b": 18}]}'),
+(2, 2, 3, 'completed', '{"sets": [{"a": 19, "b": 21}, {"a": 14, "b": 21}]}'),
+(3, 3, 4, 'completed', '{"sets": [{"a": 21, "b": 19}, {"a": 20, "b": 22}, {"a": 21, "b": 17}]}'),
+(4, 4, 5, 'completed', '{"sets": [{"a": 21, "b": 10}, {"a": 21, "b": 12}]}'),
+(5, 5, 6, 'scheduled', null),
+(6, 6, 7, 'scheduled', null),
+(7, 7, 8, 'completed', '{"sets": [{"a": 15, "b": 21}, {"a": 21, "b": 19}, {"a": 18, "b": 21}]}'),
+(8, 8, 9, 'completed', '{"sets": [{"a": 21, "b": 8}, {"a": 21, "b": 11}]}'),
+(9, 9, 10, 'scheduled', null),
+(10, 10, 11, 'scheduled', null),
+(11, 11, 12, 'completed', '{"sets": [{"a": 21, "b": 23}, {"a": 17, "b": 21}]}'),
+(12, 12, 13, 'completed', '{"sets": [{"a": 21, "b": 19}, {"a": 21, "b": 15}]}'),
+(13, 13, 14, 'scheduled', null),
+(14, 14, 15, 'scheduled', null),
+(15, 15, 1, 'completed', '{"sets": [{"a": 18, "b": 21}, {"a": 21, "b": 14}, {"a": 21, "b": 19}]}');
+
+INSERT INTO notifications (user_id, type, payload_json, read_at) VALUES
+(1, 'booking_confirmed', '{"message": "Your booking at Play Arena is confirmed."}', '2024-05-08 10:05:00+05:30'),
+(2, 'match_reminder', '{"message": "Upcoming match tomorrow at Agon Sports!"}', null),
+(3, 'booking_confirmed', '{"message": "Your booking at Spuddy is confirmed."}', '2024-05-09 11:20:00+05:30'),
+(4, 'payment_success', '{"amount": 600, "currency": "INR"}', '2024-05-09 14:10:00+05:30'),
+(5, 'booking_confirmed', '{"message": "Your booking at Gurukul Sports is confirmed."}', null),
+(6, 'match_reminder', '{"message": "Don''t forget your match at Smash & Sprint."}', null),
+(7, 'booking_confirmed', '{"message": "Your booking at ClearDrop Sports is confirmed."}', '2024-05-10 09:15:00+05:30'),
+(8, 'payment_success', '{"amount": 350, "currency": "INR"}', '2024-05-10 10:30:00+05:30'),
+(9, 'booking_confirmed', '{"message": "Your booking at Star Badminton Academy is confirmed."}', null),
+(10, 'match_reminder', '{"message": "Upcoming match at Active Arena!"}', null),
+(11, 'booking_confirmed', '{"message": "Your booking at Feather Touch is confirmed."}', '2024-05-11 12:45:00+05:30'),
+(12, 'payment_success', '{"amount": 450, "currency": "INR"}', '2024-05-11 15:00:00+05:30'),
+(13, 'booking_confirmed', '{"message": "Your booking at Rally Point is confirmed."}', null),
+(14, 'match_reminder', '{"message": "Upcoming match tomorrow at Shuttle Craze!"}', null),
+(15, 'booking_confirmed', '{"message": "Your booking at ProShot Arena is confirmed."}', '2024-05-12 08:20:00+05:30');
